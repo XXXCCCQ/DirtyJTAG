@@ -123,13 +123,13 @@ uint8_t cmd_handle(usbd_device *usbd_dev, const usbd_transfer *transfer) {
   uint8_t *rxbuf = (uint8_t *)transfer->buffer;
   uint32_t count = transfer->transferred;
   uint8_t *commands = rxbuf;
-  uint8_t *output_buffer = tx_buffer;
-
+  uint8_t *output_buffer = tx_buffer;//transfer就是openocd中的transfer
+  
   while ((commands < (rxbuf + count)) && (*commands != CMD_STOP))
   {
     switch ((*commands)&0x0F) {
     case CMD_INFO:
-      output_buffer += cmd_info(output_buffer);
+      output_buffer += cmd                                                                                                                    _info(output_buffer);
       break;
 
     case CMD_FREQ:
@@ -158,6 +158,7 @@ uint8_t cmd_handle(usbd_device *usbd_dev, const usbd_transfer *transfer) {
     case CMD_CLK:
       output_buffer += cmd_clk(commands, !!(*commands & READOUT), output_buffer);
       commands += 2;
+
       break;
 
     default:
@@ -166,7 +167,7 @@ uint8_t cmd_handle(usbd_device *usbd_dev, const usbd_transfer *transfer) {
     }
 
     commands++;
-  }
+  }                   
   /* Send the transfer response back to host */
   if (tx_buffer != output_buffer)
     usb_send(usbd_dev, tx_buffer, output_buffer - tx_buffer);
@@ -200,11 +201,11 @@ static uint32_t cmd_xfer(const uint8_t *commands, bool extend_length, bool no_re
   /* Fill the output buffer with zeroes */
   if (!no_read)
   {
-    memset(output_buffer, 0, (transferred_bits + 7) / 8);
+    memset(output_buffer, 0, (transferred_bits + 7) / 8);/*初始化为零*/
   }
 
   jtag_transfer(transferred_bits, commands+2, output_buffer);
-  return (transferred_bits + 7) / 8;
+  return (transferred_bits + 7) / 8;/*传输数据的字节数*/
 }
 
 static void cmd_setsig(const uint8_t *commands) {
